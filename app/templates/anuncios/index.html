@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <!-- Formulario para publicar anuncio (Solo si está logueado) -->
+    {% if current_user.is_authenticated %}
+    <div class="col-md-4 mb-4">
+        <div class="card shadow">
+            <div class="card-body">
+                <h4 class="card-title">Publicar Anuncio</h4>
+                <form action="{{ url_for('anuncios.create') }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Título</label>
+                        <input type="text" name="titulo" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Categoría</label>
+                        <select name="categoria_id" class="form-select" required>
+                            <option value="">Seleccione...</option>
+                            {% for cat in categorias %}
+                                <option value="{{ cat.id }}">{{ cat.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contenido</label>
+                        <textarea name="contenido" class="form-control" rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Publicar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Listado de Anuncios (Tablón) -->
+    <div class="col-md-{% if current_user.is_authenticated %}8{% else %}12{% endif %}">
+        <h3>Tablón de Anuncios Recientes</h3>
+        <hr>
+        {% if anuncios %}
+            <div class="row">
+                {% for a in anuncios %}
+                <div class="col-md-12 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="card-title text-primary">{{ a.titulo }}</h5>
+                                <span class="badge bg-secondary">{{ a.categoria.nombre }}</span>
+                            </div>
+                            <h6 class="card-subtitle mb-2 text-muted small">Publicado por: <strong>{{ a.autor.username }}</strong> el {{ a.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</h6>
+                            <p class="card-text mt-2">{{ a.contenido }}</p>
+                            
+                            {% if current_user.is_authenticated and a.usuario_id == current_user.id %}
+                                <a href="{{ url_for('anuncios.delete', id=a.id) }}" class="btn btn-outline-danger btn-sm" onclick="return confirm('¿Deseas eliminar este anuncio?')">Eliminar mi anuncio</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">No hay anuncios publicados todavía.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
